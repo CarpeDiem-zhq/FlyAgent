@@ -1,0 +1,35 @@
+[project]
+name = "wukong-service"
+
+[context]
+entry_files = [
+  "AGENTS.md",
+  "PROJECT_CONTEXT.md",
+  "WUKONG_JAVA_STANDARDS.md",
+]
+
+[defaults]
+primary_context_file = "PROJECT_CONTEXT.md"
+java_standards_file = "WUKONG_JAVA_STANDARDS.md"
+backend_changelog_file = "webapp/web/docs/changelog/project-prd-overview.md"
+frontend_changelog_file = "webapp/web/docs/changelog/frontend-api-change-log.md"
+
+[mcp_servers.mysql]
+command = "npx"
+args = [
+  "-y",
+  "@yukihito/mysql-mcp-server@1.0.2",
+  "--host",
+  "127.0.0.1",
+  "--port",
+  "3306",
+  "--name",
+  "root",
+  "--password",
+  "jhyz@2025",
+  "--database",
+  "wukong_test",
+]
+
+[mcp_servers.mysql.env]
+NODE_NO_WARNINGS = "1"

@@ -1,0 +1,16 @@
+package cn.yeezi.db.mapper;
+
+import cn.yeezi.db.entity.ScriptCopyLogEntity;
+import com.baomidou.mybatisplus.core.mapper.BaseMapper;
+
+/**
+ * <p>
+ * ScriptCopyLog Mapper
+ * </p>
+ *
+ * @author codex
+ * @since 2026-01-12
+ */
+public interface ScriptCopyLogMapper extends BaseMapper<ScriptCopyLogEntity> {
+
+}

@@ -1,0 +1,117 @@
+server:
+  servlet:
+    context-path: /api
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+    session:
+      timeout: 600s
+  max-http-request-header-size: 8192
+  tomcat:
+    connection-timeout: 600000
+
+spring:
+  profiles:
+    active: dev
+  ai:
+    model:
+      chat: deepseek
+    deepseek:
+      chat:
+        options:
+          model: deepseek-chat
+          temperature: 1.0
+          max-tokens: 4096
+  servlet:
+    multipart:
+      max-file-size: 200MB
+      max-request-size: 200MB
+  datasource:
+    url: jdbc:mysql://localhost:3306/testdb?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 50
+      max-wait: 60000
+      pool-prepared-statements: true
+      max-pool-prepared-statement-per-connection-size: 20
+      stat-view-servlet:
+        enabled: true
+        url-pattern: /druid/*
+        login-username: yeziy
+        login-password: yz123456
+        allow: 127.0.0.1
+
+mybatis-plus:
+  global-config:
+    db-config:
+      logic-delete-field: del
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+  mapper-locations: classpath*:cn/yeezi/db/mapper/xml/*.xml
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: order
+  default-flat-param-object: true
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: default
+      paths-to-match: /**
+      packages-to-scan: cn.yeezi.controller
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+    enable-version: true
+
+openclaw:
+  auth-token: ${OPENCLAW_AUTH_TOKEN:openclaw-dev-token}
+
+script:
+  generation:
+    opening-strategies:
+      - code: resonance
+        name: 共鸣吐槽型
+        instruction: 从年轻人共同困扰或吐槽情绪切入开头
+      - code: real_trouble
+        name: 真实困扰型
+        instruction: 从用户正在经历的真实麻烦或卡点直接切入开头
+      - code: contrast_surprise
+        name: 反差惊讶型
+        instruction: 用前后反差或超预期变化制造惊讶感开头
+      - code: friend_recommend
+        name: 朋友安利型
+        instruction: 以朋友推荐、熟人种草或口碑安利方式切入开头
+      - code: self_mocking
+        name: 自嘲整活型
+        instruction: 以自嘲、轻松玩梗或整活口吻打开开头
+      - code: lazy_easy
+        name: 懒人省事型
+        instruction: 突出省心、省步骤、省时间的懒人诉求切入开头
+      - code: workplace_breakdown
+        name: 职场崩溃型
+        instruction: 从职场高压、通勤疲惫或效率崩溃场景切入开头
+      - code: social_share
+        name: 社交分享型
+        instruction: 从想分享给朋友、晒成果或引发讨论的社交动机切入开头
+      - code: curious_try
+        name: 好奇试试看型
+        instruction: 用好奇心驱动，营造想试一试、想点开看的开头
+      - code: emergency_rescue
+        name: 意外救场型
+        instruction: 从关键时刻被及时解决问题、被意外救场的场景切入开头
+      - code: upgrade_compare
+        name: 对比升级型
+        instruction: 通过旧方案与新方案的对比，突出升级体验切入开头
+      - code: beginner_experience
+        name: 小白体验型
+        instruction: 从新手第一次尝试、零门槛上手体验切入开头
