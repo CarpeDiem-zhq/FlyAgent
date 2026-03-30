@@ -29,7 +29,7 @@ public class StrategyController {
     @GetMapping("/list")
     public ResultVO<List<StrategyVO>> list(@Valid StrategyListParam param) {
         return ResultVO.success(strategyService.list(
-                param.getProductId(), param.getFeatureId(), param.getCoreSellingPointId()));
+                param.getProductId(), param.getFeatureId(), param.getCoreSellingPointIds()));
     }
 
     @Operation(summary = "创建策略")

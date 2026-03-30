@@ -25,6 +25,6 @@ public class ScriptAssetPageParam extends PageParam {
     @Schema(description = "产品id")
     private Long productId;
 
-    @Schema(description = "提示词id")
-    private Long promptId;
+    @Schema(description = "功能id")
+    private Long featureId;
 }

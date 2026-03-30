@@ -35,9 +35,17 @@ public class StrategyEntity implements StrategyEntityGetter {
     @Schema(description = "功能id")
     private Long featureId;
 
+    @TableField("feature_name")
+    @Schema(description = "功能名称快照")
+    private String featureName;
+
     @TableField("core_selling_point_id")
     @Schema(description = "核心卖点id")
     private Long coreSellingPointId;
+
+    @TableField("core_selling_point_names")
+    @Schema(description = "核心卖点名称快照(JSON数组)")
+    private String coreSellingPointNames;
 
     @TableField("target_audience")
     @Schema(description = "目标受众")
@@ -58,10 +66,6 @@ public class StrategyEntity implements StrategyEntityGetter {
     @TableField("ad_words")
     @Schema(description = "字数限制")
     private String adWords;
-
-    @TableField("prompt_id")
-    @Schema(description = "提示词id")
-    private Long promptId;
 
     @TableField("enabled")
     @Schema(description = "是否启用")
@@ -84,13 +88,14 @@ public class StrategyEntity implements StrategyEntityGetter {
         this.strategyName = source.getStrategyName();
         this.productId = source.getProductId();
         this.featureId = source.getFeatureId();
+        this.featureName = source.getFeatureName();
         this.coreSellingPointId = source.getCoreSellingPointId();
+        this.coreSellingPointNames = source.getCoreSellingPointNames();
         this.targetAudience = source.getTargetAudience();
         this.targetScene = source.getTargetScene();
         this.toneStyle = source.getToneStyle();
         this.callToAction = source.getCallToAction();
         this.adWords = source.getAdWords();
-        this.promptId = source.getPromptId();
         this.enabled = source.getEnabled();
         this.del = source.getDel();
         this.createTime = source.getCreateTime();

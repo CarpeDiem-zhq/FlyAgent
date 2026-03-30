@@ -32,21 +32,18 @@ public class ProductService {
         if (product == null) {
             throw new BusinessException("产品不存在或已删除");
         }
+        if (Boolean.FALSE.equals(product.getEnabled())) {
+            throw new BusinessException("产品已停用");
+        }
         return product;
     }
 
-    public List<ProductVO> listByCategory(Long categoryId) {
-        LambdaQueryWrapper<ProductEntity> query = new LambdaQueryWrapper<>();
-        query.eq(ProductEntity::getCategoryId, categoryId);
-        query.eq(ProductEntity::getDel, false);
-        return productRepository.list(query).stream().map(this::toVO).collect(Collectors.toList());
-    }
-
     public List<ProductVO> listProducts(ProductListParam param) {
+        String productName = param == null ? null : param.getProductName();
+        String keyword = productName == null ? null : productName.trim();
         LambdaQueryWrapper<ProductEntity> query = new LambdaQueryWrapper<>();
         query.eq(ProductEntity::getDel, false);
-        query.like(param.getProductName() != null && !param.getProductName().isBlank(),
-                ProductEntity::getProductName, param.getProductName());
+        query.like(keyword != null && !keyword.isBlank(), ProductEntity::getProductName, keyword);
         query.orderByAsc(ProductEntity::getId);
         return productRepository.list(query).stream().map(this::toVO).collect(Collectors.toList());
     }
@@ -58,8 +55,9 @@ public class ProductService {
     @Transactional
     public void createProduct(ProductCreateParam param) {
         ProductEntity entity = new ProductEntity();
-        entity.setCategoryId(param.getCategoryId());
-        entity.setProductName(param.getProductName());
+        entity.setProductName(param.getProductName().trim());
+        entity.setProductDesc(param.getProductDesc());
+        entity.setEnabled(true);
         entity.setDel(false);
         productRepository.save(entity);
     }
@@ -72,15 +70,17 @@ public class ProductService {
         }
         ProductEntity update = new ProductEntity();
         update.setId(param.getId());
-        update.setCategoryId(param.getCategoryId());
-        update.setProductName(param.getProductName());
+        update.setProductName(param.getProductName().trim());
+        update.setProductDesc(param.getProductDesc());
+        if (param.getEnabled() != null) {
+            update.setEnabled(param.getEnabled());
+        }
         productRepository.updateById(update);
     }
 
     private ProductVO toVO(ProductEntity entity) {
         ProductVO vo = new ProductVO();
         BeanUtils.copyProperties(entity, vo);
-        vo.setEnabled(!Boolean.TRUE.equals(entity.getDel()));
         return vo;
     }
 }

@@ -18,8 +18,8 @@ import lombok.NoArgsConstructor;
 @Schema(description = "产品创建参数")
 public class ProductCreateParam {
 
-    @Schema(description = "类目id")
-    private Long categoryId;
+    @Schema(description = "产品描述")
+    private String productDesc;
 
     @NotBlank(message = "产品名称不能为空")
     @Schema(description = "产品名称")

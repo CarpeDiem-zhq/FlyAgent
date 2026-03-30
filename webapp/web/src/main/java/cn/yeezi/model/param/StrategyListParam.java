@@ -2,6 +2,7 @@ package cn.yeezi.model.param;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -19,6 +20,6 @@ public class StrategyListParam {
     @Schema(description = "功能id")
     private Long featureId;
 
-    @Schema(description = "核心卖点id")
-    private Long coreSellingPointId;
+    @Schema(description = "核心卖点id列表")
+    private List<Long> coreSellingPointIds;
 }

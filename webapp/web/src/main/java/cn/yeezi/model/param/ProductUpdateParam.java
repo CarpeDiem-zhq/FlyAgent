@@ -17,10 +17,13 @@ public class ProductUpdateParam {
     @Schema(description = "产品id")
     private Long id;
 
-    @Schema(description = "类目id")
-    private Long categoryId;
+    @Schema(description = "产品描述")
+    private String productDesc;
 
     @NotBlank(message = "产品名称不能为空")
     @Schema(description = "产品名称")
     private String productName;
+
+    @Schema(description = "是否启用")
+    private Boolean enabled;
 }

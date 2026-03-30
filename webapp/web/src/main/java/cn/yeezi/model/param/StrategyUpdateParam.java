@@ -3,6 +3,8 @@ package cn.yeezi.model.param;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -30,8 +32,9 @@ public class StrategyUpdateParam {
     private Long featureId;
 
     @NotNull(message = "核心卖点id不能为空")
-    @Schema(description = "核心卖点id")
-    private Long coreSellingPointId;
+    @Size(min = 1, message = "至少选择一个核心卖点")
+    @Schema(description = "核心卖点id列表")
+    private List<Long> coreSellingPointIds;
 
     @NotBlank(message = "目标受众不能为空")
     @Schema(description = "目标受众")
@@ -52,9 +55,6 @@ public class StrategyUpdateParam {
     @NotBlank(message = "字数限制不能为空")
     @Schema(description = "字数限制")
     private String adWords;
-
-    @Schema(description = "提示词id")
-    private Long promptId;
 
     @Schema(description = "是否启用")
     private Boolean enabled;

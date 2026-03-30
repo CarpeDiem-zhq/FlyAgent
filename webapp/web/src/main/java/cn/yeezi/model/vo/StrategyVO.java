@@ -1,6 +1,7 @@
 package cn.yeezi.model.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import lombok.Data;
 
 @Data
@@ -19,8 +20,14 @@ public class StrategyVO {
     @Schema(description = "功能id")
     private Long featureId;
 
-    @Schema(description = "核心卖点id")
-    private Long coreSellingPointId;
+    @Schema(description = "功能名称")
+    private String featureName;
+
+    @Schema(description = "核心卖点id列表")
+    private List<Long> coreSellingPointIds;
+
+    @Schema(description = "核心卖点名称列表")
+    private List<String> coreSellingPointNames;
 
     @Schema(description = "目标受众")
     private String targetAudience;
@@ -36,9 +43,6 @@ public class StrategyVO {
 
     @Schema(description = "字数限制")
     private String adWords;
-
-    @Schema(description = "提示词id")
-    private Long promptId;
 
     @Schema(description = "是否启用")
     private Boolean enabled;

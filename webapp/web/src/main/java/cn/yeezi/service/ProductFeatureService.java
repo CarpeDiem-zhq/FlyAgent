@@ -20,6 +20,7 @@ public class ProductFeatureService {
 
     private final ProductFeatureRepository productFeatureRepository;
     private final ProductService productService;
+    private final StrategySnapshotSyncService strategySnapshotSyncService;
 
     public ProductFeatureEntity requireActiveFeature(Long featureId) {
         LambdaQueryWrapper<ProductFeatureEntity> query = new LambdaQueryWrapper<>();
@@ -70,6 +71,7 @@ public class ProductFeatureService {
             update.setEnabled(param.getEnabled());
         }
         productFeatureRepository.updateById(update);
+        strategySnapshotSyncService.syncFeatureNameSnapshot(param.getProductId(), param.getId(), param.getFeatureName().trim());
     }
 
     private ProductFeatureVO toVO(ProductFeatureEntity entity) {

@@ -12,7 +12,11 @@ public interface StrategyEntityGetter {
 
     Long getFeatureId();
 
+    String getFeatureName();
+
     Long getCoreSellingPointId();
+
+    String getCoreSellingPointNames();
 
     String getTargetAudience();
 
@@ -23,8 +27,6 @@ public interface StrategyEntityGetter {
     String getCallToAction();
 
     String getAdWords();
-
-    Long getPromptId();
 
     Boolean getEnabled();
 

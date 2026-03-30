@@ -19,9 +19,6 @@ public class PromptVO {
     @Schema(description = "产品id")
     private Long productId;
 
-    @Schema(description = "提示词名称")
-    private String promptName;
-
     @Schema(description = "系统提示词")
     private String systemPrompt;
 

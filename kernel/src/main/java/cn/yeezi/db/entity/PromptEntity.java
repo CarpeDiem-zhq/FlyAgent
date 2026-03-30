@@ -33,10 +33,6 @@ public class PromptEntity implements PromptEntityGetter {
     @TableField("product_id")
     private Long productId;
 
-    @Schema(description = "提示词名称")
-    @TableField("prompt_name")
-    private String promptName;
-
     @Schema(description = "系统提示词")
     @TableField("system_prompt")
     private String systemPrompt;
@@ -60,7 +56,6 @@ public class PromptEntity implements PromptEntityGetter {
     public PromptEntity(PromptEntityGetter source) {
         this.id = source.getId();
         this.productId = source.getProductId();
-        this.promptName = source.getPromptName();
         this.systemPrompt = source.getSystemPrompt();
         this.enabled = source.getEnabled();
         this.del = source.getDel();

@@ -22,6 +22,26 @@ public interface ScriptAssetEntityGetter extends EntityCloner<ScriptAssetEntity>
     Long getProductId();
 
     /**
+     * 功能id
+     */
+    Long getFeatureId();
+
+    /**
+     * 核心卖点id
+     */
+    Long getCoreSellingPointId();
+
+    /**
+     * 核心卖点id列表(JSON数组)
+     */
+    String getCoreSellingPointIds();
+
+    /**
+     * 策略id
+     */
+    Long getStrategyId();
+
+    /**
      * 用户id
      */
     Long getUserId();
@@ -32,34 +52,29 @@ public interface ScriptAssetEntityGetter extends EntityCloner<ScriptAssetEntity>
     Long getPromptId();
 
     /**
-     * 提示词快照
+     * 系统提示词快照
      */
-    String getPromptSnapshot();
+    String getSystemPromptSnapshot();
 
     /**
-     * 规则快照
+     * 策略快照
      */
-    String getRuleSnapshot();
+    String getStrategySnapshot();
 
     /**
-     * 输入快照
+     * 生成功能快照
      */
-    String getInputSnapshot();
+    String getFeatureSnapshot();
 
     /**
-     * 标签快照
+     * 生成卖点快照
      */
-    String getTagSnapshot();
+    String getSellingPointSnapshot();
 
     /**
-     * 用户输入快照
+     * 脚本标题
      */
-    String getUserInputSnapshot();
-
-    /**
-     * 案例快照
-     */
-    String getCaseSnapshot();
+    String getScriptTitle();
 
     /**
      * 模型名称
@@ -67,49 +82,9 @@ public interface ScriptAssetEntityGetter extends EntityCloner<ScriptAssetEntity>
     String getModelName();
 
     /**
-     * 路由策略
+     * 脚本内容
      */
-    String getRouteStrategy();
-
-    /**
-     * 生成内容
-     */
-    String getOutputContent();
-
-    /**
-     * 父资产id
-     */
-    Long getParentAssetId();
-
-    /**
-     * 修订序号
-     */
-    Integer getRevisionSeq();
-
-    /**
-     * 复制次数
-     */
-    Integer getCopyCount();
-
-    /**
-     * 点赞次数
-     */
-    Integer getLikeCount();
-
-    /**
-     * 收藏次数
-     */
-    Integer getFavoriteCount();
-
-    /**
-     * 正向反馈次数
-     */
-    Integer getPositiveFeedbackCount();
-
-    /**
-     * 负向反馈次数
-     */
-    Integer getNegativeFeedbackCount();
+    String getScriptContent();
 
     /**
      * 是否删除：0.否 1.是

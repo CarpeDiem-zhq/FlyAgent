@@ -23,10 +23,6 @@ public class PromptUpdateParam {
     @Schema(description = "提示词id")
     private Long id;
 
-    @NotBlank(message = "提示词名称不能为空")
-    @Schema(description = "提示词名称")
-    private String promptName;
-
     @NotBlank(message = "系统提示词不能为空")
     @Schema(description = "系统提示词")
     private String systemPrompt;

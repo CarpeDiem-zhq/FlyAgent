@@ -12,11 +12,8 @@ public class OpenClawScriptGenerateVO {
     @Schema(description = "追踪id")
     private String traceId;
 
-    @Schema(description = "批次id")
-    private Long batchId;
-
-    @Schema(description = "历史id")
-    private Long historyId;
+    @Schema(description = "资产id")
+    private Long assetId;
 
     @Schema(description = "产品id")
     private Long productId;

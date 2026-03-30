@@ -1,6 +1,7 @@
 package cn.yeezi.model.vo;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 import java.time.LocalDateTime;
 import lombok.Data;
 
@@ -20,23 +21,29 @@ public class ScriptAssetVO {
     @Schema(description = "产品id")
     private Long productId;
 
+    @Schema(description = "功能id")
+    private Long featureId;
+
+    @Schema(description = "核心卖点id列表")
+    private List<Long> coreSellingPointIds;
+
+    @Schema(description = "策略id")
+    private Long strategyId;
+
     @Schema(description = "用户id")
     private Long userId;
 
     @Schema(description = "提示词id")
     private Long promptId;
 
-    @Schema(description = "生成内容")
-    private String outputContent;
+    @Schema(description = "脚本标题")
+    private String scriptTitle;
 
-    @Schema(description = "复制次数")
-    private Integer copyCount;
+    @Schema(description = "脚本内容")
+    private String scriptContent;
 
-    @Schema(description = "点赞次数")
-    private Integer likeCount;
-
-    @Schema(description = "收藏次数")
-    private Integer favoriteCount;
+    @Schema(description = "模型名称")
+    private String modelName;
 
     @Schema(description = "创建时间")
     private LocalDateTime createTime;

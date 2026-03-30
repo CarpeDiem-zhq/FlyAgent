@@ -1,207 +1,265 @@
-# Wukong 项目上下文
+# FlyAgent 项目上下文
 
 ## 1. 文档说明
-- 本文件用于记录项目当前最新状态，是项目业务、流程、模块职责与技术架构的统一上下文入口。
-- 本文件不记录历史变更过程；当代码或方案发生变化时，应直接更新对应章节，使内容始终与当前实现一致。
+- 本文件记录 FlyAgent 项目当前最新业务状态，是项目业务逻辑、流程、模块职责与技术架构的统一上下文入口。
+- 本文件只描述当前实现，不记录历史演进过程；当代码或方案变化时，应直接改写对应章节。
+- 后端与前端联动的历史变更记录统一维护在：
+  - `webapp/web/docs/changelog/project-prd-overview.md`
+  - `webapp/web/docs/changelog/frontend-api-change-log.md`
 
-## 2. 产品目标与业务定位
-- 项目目标：为不同产品提供可配置、可持续迭代的广告脚本生成能力。
-- 业务方式：业务系统负责流程编排、规则约束与结构化参数组织，统一调用 LLM 接入层生成脚本。
-- 核心价值：通过标签、规则、提示词、优秀脚本与知识沉淀能力，持续提升脚本生成效果并降低人工模板维护成本。
+## 2. 项目定位与业务目标
+- 项目定位：FlyAgent 是一个围绕广告脚本生成的后端服务，核心职责是管理生成所需主数据，并基于结构化参数调用大模型生成脚本。
+- 当前业务目标：
+  - 让运营或配置人员维护产品、提示词、功能、核心卖点、策略
+  - 让业务端或 OpenClaw 通过统一参数模型生成脚本
+  - 让生成结果直接沉淀为脚本资产，便于后续查询和复用
+- 当前项目只保留用户登录体系与新版脚本生成主链路，不再承载旧版标签、规则、优秀案例、生成历史、应用埋点等业务。
 
-## 3. 关键业务概念
-- 类目（Category）
-  - 产品的归属分类，用于组织产品集合。
-- 产品（Product）
-  - 脚本生成的业务对象，例如某个 App 或业务线。
-- 标签组（Tag Group）
-  - 脚本生成结构化输入字段对应的键。
-- 标签项（Tag Item）
-  - 标签组的可选值，支持单选、多选或输入型结构。
-- 规则（Rule）
-  - 包括全局规则和产品规则，用于约束模型输出。
-- 提示词（Prompt Config）
-  - 当前以 `system_prompt` 为核心配置项。
-- 脚本资产（Script Asset）
-  - 用户确认后保存的脚本结果，支持反馈与回炉。
-- 生成历史（Generate History）
-  - 每次生成、回炉、反馈回炉的过程留痕，支持“生成 -> 保存”链路追踪。
-- 优秀脚本结构记录
-  - 优秀脚本导入、结构拆解、知识库同步后的沉淀记录。
+## 3. 当前核心业务对象
+- 产品（`product`）
+  - 脚本生成的顶层业务对象，维护产品名称、产品描述、启停状态。
+- 系统提示词（`prompt_config`）
+  - 每个产品仅维护一条当前系统提示词，用于生成时拼接系统提示。
+- 产品功能（`product_feature`）
+  - 产品下的功能维度，是卖点和策略的上游归属对象。
+- 功能核心卖点（`feature_selling_point`）
+  - 归属于某个产品功能，用于指定本次脚本重点强调的卖点。
+- 生成策略（`strategy`）
+  - 归属于单个产品功能，可同时绑定多个核心卖点。
+  - 除了保存关系 ID，还保存功能名称和核心卖点名称快照。
+- 脚本资产（`script_asset`）
+  - 每次成功生成脚本后直接落库的结果实体，保存脚本正文以及提示词、功能、多卖点、策略快照。
+- 用户（`user`）
+  - 登录、注册、鉴权的基础主体；普通脚本生成接口依赖当前登录用户身份，OpenClaw 内网生成接口显式传入 `userId`。
 
 ## 4. 核心业务流程
-1. 创建类目
-2. 创建产品，并自动初始化固定标签组
-3. 维护标签组、标签项、规则与提示词
-4. 在生成页选择产品功能、核心卖点与其他控制参数
-5. 后端组合结构化输入、规则、提示词与策略信息，调用统一 LLM 层生成脚本
-6. 用户可对未保存结果执行回炉，对已保存资产执行反馈回炉
-7. 用户确认后保存为脚本资产，并通过 `historyId` 建立生成历史与资产映射
-8. 优秀脚本可异步导入、结构拆解并同步到知识库
-9. 用户在业务页面触发应用功能时，可按应用类型记录使用埋点并查询个人与全局累计次数
+
+### 4.1 后台主数据维护流程
+1. 创建产品
+2. 为产品创建系统提示词
+3. 为产品创建功能
+4. 为功能创建核心卖点
+5. 为 `产品 + 功能 + 核心卖点集合` 创建策略
+6. 按启停状态维护各层对象是否可继续参与生成
+
+### 4.2 脚本生成主流程
+1. 选择产品
+2. 选择该产品下的功能
+3. 选择该功能下的一个或多个核心卖点
+4. 选择与当前卖点集合完整匹配的策略
+5. 后端校验产品、功能、卖点、策略之间的归属关系
+6. 后端读取该产品当前启用的系统提示词
+7. 后端拼接系统提示和结构化用户内容，调用统一 LLM 服务生成脚本
+8. 后端解析模型返回的 JSON 结果并执行基础质检
+9. 后端将脚本结果和各类快照直接保存到 `script_asset`
+10. 返回资产 ID、脚本标题、脚本内容、模型名和质检结果
+
+### 4.3 OpenClaw 接入流程
+1. OpenClaw 通过 `/internal/openclaw/script/resolve` 传入自然语言和当前草稿状态
+2. 后端按 `product -> feature -> coreSellingPoint -> strategy` 顺序补齐参数
+3. 当参数不完整时，返回 `ASK` 状态、当前步骤和候选选项
+4. 当参数齐全时，返回 `READY` 状态
+5. OpenClaw 调用 `/internal/openclaw/script/generate`
+6. 后端复用统一脚本生成服务生成并落库
+7. 后端将结果转换为适合对话回显的 `displayText`
 
 ## 5. 核心模块职责
 
-### 5.1 类目与产品
-- 提供类目新增、列表能力
-- 提供产品新增、列表、详情能力
-- 产品新增后自动初始化固定标签组
+### 5.1 用户与鉴权
+- `user` 模块负责验证码、登录、注册、登出、登录信息查询。
+- 普通业务接口依赖当前登录态获取用户信息。
+- OpenClaw 内网接口走单独的 Bearer Token 鉴权，不依赖前台会话。
 
-### 5.2 标签系统
-- 固定标签组包括：
-  - `product_service_name`
-  - `product_feature`
+### 5.2 产品管理
+- 提供产品列表、详情、新增、更新能力。
+- 产品是提示词、功能、核心卖点、策略的归属根节点。
+- 产品停用后，不应再作为可生成对象使用。
+
+### 5.3 提示词管理
+- 每个产品只允许存在一条未删除的系统提示词。
+- 生成脚本时按产品读取当前启用的提示词。
+- 若产品没有可用提示词，生成会直接失败。
+
+### 5.4 产品功能管理
+- 功能归属于产品。
+- 功能列表按产品维度查询。
+- 功能停用后，不应再进入生成链路。
+
+### 5.5 核心卖点管理
+- 核心卖点归属于 `product + feature`。
+- 后端负责校验卖点是否属于指定功能和产品，前端与 OpenClaw 不承担最终关系校验。
+- 卖点停用后，不应再进入生成链路。
+- 当前管理端策略配置和公开脚本生成接口都支持多选核心卖点。
+
+### 5.6 策略管理
+- 策略归属于 `product + feature + coreSellingPoint[]`。
+- 当前策略采用宽表模型，直接维护以下核心字段：
+  - `strategy_name`
+  - `feature_name`
+  - `core_selling_point_names`
   - `target_audience`
-  - `core_selling_points`
-  - `ad_tone_style`
+  - `target_scene`
+  - `tone_style`
   - `call_to_action`
   - `ad_words`
-  - `key_scenes`
-- `product_feature` 为单选
-- `core_selling_points` 必须归属于已选 `product_feature`
-- 后端负责功能项与核心卖点归属校验，前端不承担该规则判断
+- 策略与多个核心卖点的真实关系由 `strategy_selling_point` 维护。
+- 后端负责校验策略所属产品、功能、卖点关系，并按卖点集合完整匹配策略。
 
-### 5.3 规则系统
-- 当前保留全局规则与产品规则
-- 已移除规则补丁（Rule Patch / Correction）模型与链路
+### 5.7 脚本生成
+- 统一由 `ScriptGenerationService` 编排生成流程。
+- 系统提示由产品提示词和固定 JSON 输出约束组成。
+- 用户内容由产品、功能、卖点、策略字段组装成 JSON 结构后传给 LLM。
+- 卖点在提示负载中按数组传递，要求模型同时覆盖全部已选卖点。
+- 模型响应需按约定 JSON 协议返回，至少包含标题、结构化字段和脚本正文。
+- 当前生成成功后直接落 `script_asset`，不再拆分生成批次、生成历史、反馈回炉、保存动作。
 
-### 5.4 提示词系统
-- 当前仅保留 `system_prompt`
-- 提示词支持启用与禁用
-- 生成时使用规则、提示词、结构化输入和策略信息构造提示上下文
+### 5.8 脚本质检
+- 当前质检为基础规则质检，不做复杂审核流程。
+- 主要检查项包括：
+  - 生成结果是否为空
+  - 标题是否为空
+  - 正文是否为空
+  - `hook/problem/solution/cta` 结构是否完整
+  - 正文是否包含代码块
+  - 在配置字数限制场景下正文是否明显过短
+- 质检结果随生成响应一并返回，同时保留在 OpenClaw 回显文本中。
 
-### 5.5 脚本生成
-- 由业务系统组织结构化数据并调用统一 LLM 接入层
-- 当前脚本生成链路已从 Dify Workflow 切换为基于 Spring AI 的统一 LLM 接入层
-- 当前接入层仅使用 Spring AI 官方 DeepSeek 模型接入
-- DeepSeek 通过 Spring AI 官方 starter 自动装配并由统一网关调用
-- 脚本生成当前固定走 DeepSeek；后续若新增其他模型，在统一 AI 门面层扩展
-- 批量生成支持 `adNumber` 1 到 10，并通过线程池并发执行
-- 批量请求发起前会预分配不同 `opening strategy`，降低同批次开头同质化
-- `controlParams.ad_words` 同时作为结构化控制参数和系统提示词中的字数约束
-- 模型输出按 JSON 协议解析，脚本文本来自返回结构中的 `script` 字段
+### 5.9 脚本资产
+- 每次生成成功即新增一条脚本资产记录。
+- 脚本资产保存：
+  - 产品、功能、卖点、策略、用户、提示词关联 ID
+  - 核心卖点 ID 列表
+  - 系统提示词快照
+  - 策略快照
+  - 功能快照
+  - 多卖点快照
+  - 脚本标题、脚本正文、模型名称
+- 当前提供“我的资产”“全部资产”“资产详情”查询能力。
 
-### 5.6 AI 接入层
-- `cn.yeezi.ai` 负责统一管理 AI 场景、ChatClient 装配与模型配置
-- 当前通过 `AiChatGateway` 对业务暴露统一调用入口
-- 当前只保留 DeepSeek 实现，不再维护未启用的 provider 分支
-- DeepSeek 默认参数统一由 `spring.ai.deepseek.chat.options.*` 管理
-
-### 5.7 回炉与反馈
-- 回炉
-  - 面向未保存脚本，基于当前脚本内容与修改意见重新生成
-- 反馈回炉
-  - 面向已保存资产，基于资产脚本与反馈意见重新生成
-- 两类链路都会记录新的生成历史
-
-### 5.8 脚本资产与生成历史
-- 生成、回炉、反馈回炉都会落历史
-- 保存资产时可传 `historyId`，建立历史到资产的关联
-- 同一 `historyId` 不允许重复保存
-- 后端负责校验历史记录归属用户与产品一致性
-
-### 5.9 优秀脚本结构化与知识库同步
-- 优秀脚本导入接口先落基础记录，再异步执行结构拆解与知识库同步
-- 状态流转为：
-  - `SYNCING`
-  - `SUCCESS`
-  - `FAILED`
-- 成功后回写 `structuredScript`、`segmentId`
-- 失败后回写 `syncErrorMsg`
-
-### 5.10 应用使用埋点
-- 提供通用应用使用埋点能力，按 `appCode` 区分应用类型
-- 当前已支持 `TTS`
-- 前端只需传入应用类型编码，后端使用当前登录用户身份落库
-- 每次点击写入一条埋点日志，不做去重
-- 支持查询当前登录用户在某应用下的累计次数，以及该应用的全局累计次数
+### 5.10 OpenClaw 对话补参
+- OpenClaw 只负责自然语言入口、多轮补参与结果回显。
+- 后端在 `resolve` 阶段支持两类参数识别：
+  - 产品名称模糊命中
+  - 候选项 ID 或候选项标签命中
+- 当用户输入不属于脚本生成意图，且当前草稿尚未选定产品时，返回 `UNSUPPORTED`。
 
 ## 6. 关键接口语义
+- `GET /product/list`
+  - 查询产品列表，支持按产品名模糊搜索。
+- `GET /product/detail`
+  - 查询单个产品详情，仅返回未删除且启用的产品。
+- `POST /product/create`
+  - 创建产品，默认启用。
+- `POST /product/update`
+  - 更新产品名称、描述、启停状态。
+- `GET /prompt/list`
+  - 查询产品下提示词列表，可按启用状态过滤。
+- `GET /prompt/detail`
+  - 查询提示词详情。
+- `POST /prompt/create`
+  - 为产品创建系统提示词；同一产品不允许重复创建未删除提示词。
+- `POST /prompt/update`
+  - 更新提示词内容与启停状态。
+- `GET /productFeature/list`
+  - 查询产品下功能列表。
+- `POST /productFeature/create`
+  - 创建产品功能。
+- `POST /productFeature/update`
+  - 更新产品功能与启停状态。
+- `GET /sellingPoint/list`
+  - 查询指定产品功能下的核心卖点列表。
+- `POST /sellingPoint/create`
+  - 创建核心卖点。
+- `POST /sellingPoint/update`
+  - 更新核心卖点与启停状态。
+- `GET /strategy/list`
+  - 查询指定产品下的策略列表，可按功能和核心卖点集合过滤。
+  - 当传入核心卖点集合时，按完整匹配规则返回策略。
+- `POST /strategy/create`
+  - 创建策略，核心卖点入参为多选数组。
+- `POST /strategy/update`
+  - 更新策略与启停状态，核心卖点入参为多选数组。
 - `POST /script/generate`
-  - 生成广告脚本
-  - 返回每条结果对应的 `batchId`、`historyId`、`itemSeq`
-- `POST /script/rerun`
-  - 对未保存脚本执行回炉生成
-- `POST /scriptBehavior/feedback`
-  - 对已保存资产执行反馈回炉
-- `POST /scriptAsset/save`
-  - 保存脚本资产
-  - 建议透传 `historyId`，由后端建立历史映射并校验重复保存
-- `GET /tag/item/coreSellingPoints`
-  - 按产品功能查询可选核心卖点
-- `GET /tag/item/features`
-  - 按产品查询已启用的产品功能列表
-- `POST /script/excellent/add`
-  - 异步导入优秀脚本结构记录
-  - 响应 `recordId`、`syncStatus`
-- `GET /script/excellent/list`
-  - 按产品分页查询优秀脚本结构记录及同步状态
-- `POST /appUsage/record`
-  - 记录当前登录用户某应用类型的一次使用
-  - 当前前端只需传 `appCode`，例如 `TTS`
-- `GET /appUsage/stats`
-  - 查询当前登录用户某应用类型的累计使用次数
-  - 同时返回该应用类型的全局累计使用次数
+  - 按 `productId + featureId + coreSellingPointIds + strategyId` 生成脚本。
+  - 生成成功后直接写入 `script_asset`。
+- `GET /scriptAsset/my`
+  - 分页查询当前登录用户自己的脚本资产。
+- `GET /scriptAsset/all`
+  - 分页查询全量脚本资产。
+- `GET /scriptAsset/detail`
+  - 查询单条脚本资产详情。
+- `POST /internal/openclaw/script/resolve`
+  - 根据用户自然语言和当前草稿补齐脚本生成参数。
+  - 返回状态包括 `ASK`、`READY`、`UNSUPPORTED`。
+- `POST /internal/openclaw/script/generate`
+  - 供 OpenClaw 传入完整参数和 `userId` 后直接生成脚本。
+- `GET /user/getImgCode`
+  - 获取图形验证码。
+- `POST /user/login`
+  - 用户登录。
+- `POST /user/register`
+  - 用户注册。
+- `POST /user/logout`
+  - 用户登出。
+- `GET /user/getLoginInfo`
+  - 查询当前登录用户信息。
 
 ## 7. 数据与持久化要点
-- `tag_item`
-  - 已移除 `tag_code`
-  - 使用 `feature_item_id` 表达核心卖点与产品功能的归属关系
-- `prompt_config`
-  - 以 `system_prompt` 为主
-- `script_generate_batch` 与 `script_generate_history`
-  - 用于记录生成批次与单条生成历史
-- `excellent_script_struct`
-  - 用于记录优秀脚本导入、结构拆解与知识库同步结果
-- `app_usage_log`
-  - 用于记录用户按应用类型产生的使用埋点明细
-- `excellent_case`
-  - 已删除，优秀案例不再使用独立表
-- `rule_patch`
-  - 已删除，相关结构与逻辑不再使用
-- DDL 管理原则
+- 当前核心业务表：
+  - `product`
+  - `prompt_config`
+  - `product_feature`
+  - `feature_selling_point`
+  - `strategy`
+  - `strategy_selling_point`
+  - `script_asset`
+  - `user`
+- 关键持久化约束：
+  - `prompt_config` 通过唯一索引保证每个产品仅一条未删除提示词
+  - `feature_selling_point` 通过 `product_id + feature_id` 表达归属关系
+  - `strategy` 保存功能名称和卖点名称快照
+  - `strategy_selling_point` 表达策略与多个核心卖点的真实关系
+  - `script_asset` 通过 `core_selling_point_ids` 和多类快照保存生成时上下文
+- DDL 管理原则：
   - DDL 文件放在 `webapp/web/docs/`
-  - 历史 DDL 不回改，只追加
+  - 历史 DDL 不回改，只追加新的 DDL 文件或在新文件中声明增量变更
 
 ## 8. 技术架构与实现约束
-- 后端技术栈
+- 后端技术栈：
   - Spring Boot 3.4.5
   - Java 21
   - MyBatis-Plus 3.5.12
   - Sa-Token 1.44.0
   - Redisson 3.51.0
-- 接口层约束
+- 接口层约束：
   - Controller 统一返回 `ResultVO<T>`
   - 业务异常统一使用 `BusinessException`
-- 配置管理
+- AI 调用架构：
+  - 业务通过统一 `LlmService` 调用模型
+  - AI 场景使用 `AiSceneType.SCRIPT_GENERATION`
+  - 当前仅启用 Spring AI 官方 DeepSeek 模型接入
+  - 模型默认配置由 `spring.ai.*` 管理
+- 配置管理：
   - `webapp/web` 模块统一使用 `application*.yml`
-  - AI 模型配置统一使用 `spring.ai.*`
-  - 当前通过 `spring.ai.model.chat=deepseek` 固定活跃 chat model，避免多模型自动装配歧义
-  - Codex 项目协作配置统一使用根目录 `.codex/config.toml`
-  - 当前已配置 `mysql` MCP Server，默认只读连接本地 `dev` 数据库 `127.0.0.1:3306/wukong_test`
-- LLM 架构
-  - 业务层通过 Spring AI ChatClient + 统一 AI 门面调用模型
-  - 当前仅启用 Spring AI 官方 DeepSeek starter
-  - DeepSeek 模型实例由 Spring AI 自动装配，项目内只维护统一调用门面与默认参数读取
-  - 当前 provider 仅包括 DeepSeek
-- 并发与线程上下文
-  - 批量生成与优秀脚本异步导入会使用线程池
-  - 子线程需要显式传递必要会话信息，避免上下文丢失
-- 编码要求
+  - Codex 协作配置使用根目录 `.codex/config.toml`
+  - MySQL MCP 默认只读连接本地 `dev` 数据库 `127.0.0.1:3306/wukong_test`
+- 编码要求：
   - 源码、SQL、文档统一 UTF-8（无 BOM）
-  - 中文必须可读
+  - 中文必须可读，禁止乱码
 
 ## 9. 当前风险与注意事项
-- `ad_words` 仅增强提示词约束，模型仍可能出现字数边界偏差
-- 批量生成的开头策略分流只能降低同质化，无法完全消除
-- 优秀脚本异步导入与脚本生成共用线程池时，需要关注任务积压
-- 数据结构变更后必须同步代码、DDL 与数据库实际结构
-- 前端不承担核心业务规则判断，后端接口应保持规则闭环
+- 当前脚本质量依赖模型按 JSON 协议稳定返回；若返回结构不合法，生成会失败。
+- 当前质检只覆盖基础完整性与格式规则，不等同于人工审核。
+- `ad_words` 当前更多是生成约束提示，不能严格保证最终字数完全命中。
+- 生成结果创建即入库，若后续需要“草稿态”“人工确认后保存”语义，需要重新设计资产生命周期。
+- OpenClaw 的产品和选项匹配基于名称包含或候选值匹配，存在命中歧义时会回退到人工选择。
+- 当前 OpenClaw 仍按单卖点兼容模式工作，管理端与公开脚本生成接口已升级为多卖点。
+- 数据结构或关系约束变化后，必须同步更新代码、DDL 和本文件。
 
 ## 10. 协作维护规则
-- 当业务逻辑、核心流程、模块职责、技术方案、接口语义、校验规则、数据结构发生变化时，必须同步更新本文件对应章节
-- 更新原则是“改写为最新状态”，而不是追加历史描述
-- 当任务需要核对数据库表结构、数据分布或 SQL 实际结果时，优先通过 MySQL MCP 对本地 `dev` 数据库做只读核对，避免仅根据代码推断数据库状态
-- 历史变化过程统一记录到：
+- 当业务逻辑、核心流程、模块职责、技术方案、接口语义、校验规则、数据结构发生变化时，必须同步更新本文件对应章节。
+- 更新原则是“改写为最新状态”，不是在本文件中追加历史记录。
+- 当任务需要核对数据库表结构、数据分布或 SQL 实际结果时，优先通过 MySQL MCP 对本地 `dev` 数据库做只读核对，避免仅根据代码推断数据库状态。
+- 历史变更过程统一追加到：
   - `webapp/web/docs/changelog/project-prd-overview.md`
   - `webapp/web/docs/changelog/frontend-api-change-log.md`

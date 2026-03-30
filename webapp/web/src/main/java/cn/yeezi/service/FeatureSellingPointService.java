@@ -22,6 +22,7 @@ public class FeatureSellingPointService {
     private final FeatureSellingPointRepository featureSellingPointRepository;
     private final ProductService productService;
     private final ProductFeatureService productFeatureService;
+    private final StrategySnapshotSyncService strategySnapshotSyncService;
 
     public FeatureSellingPointEntity requireActiveSellingPoint(Long sellingPointId) {
         LambdaQueryWrapper<FeatureSellingPointEntity> query = new LambdaQueryWrapper<>();
@@ -87,6 +88,7 @@ public class FeatureSellingPointService {
             update.setEnabled(param.getEnabled());
         }
         featureSellingPointRepository.updateById(update);
+        strategySnapshotSyncService.syncSellingPointNameSnapshot(param.getId(), param.getSellingPointName().trim());
     }
 
     private FeatureSellingPointVO toVO(FeatureSellingPointEntity entity) {

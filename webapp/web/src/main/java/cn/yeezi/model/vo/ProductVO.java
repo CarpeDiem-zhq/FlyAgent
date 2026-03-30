@@ -19,8 +19,8 @@ public class ProductVO {
     @Schema(description = "产品名称")
     private String productName;
 
-    @Schema(description = "类目id")
-    private Long categoryId;
+    @Schema(description = "产品描述")
+    private String productDesc;
 
     @Schema(description = "是否启用")
     private Boolean enabled;

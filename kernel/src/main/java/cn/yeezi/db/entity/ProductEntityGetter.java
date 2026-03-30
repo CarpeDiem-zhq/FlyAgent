@@ -19,10 +19,16 @@ public interface ProductEntityGetter extends EntityCloner<ProductEntity> {
      * 产品名称
      */
     String getProductName();
+
     /**
-     * 类目id
+     * 产品描述
      */
-    Long getCategoryId();
+    String getProductDesc();
+
+    /**
+     * 是否启用
+     */
+    Boolean getEnabled();
     /**
      * 是否删除：0.否 1.是
      */

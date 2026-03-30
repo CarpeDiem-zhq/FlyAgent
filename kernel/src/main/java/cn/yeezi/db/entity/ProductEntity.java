@@ -33,9 +33,13 @@ public class ProductEntity implements ProductEntityGetter {
     @TableField("product_name")
     private String productName;
 
-    @Schema(description = "类目id")
-    @TableField("category_id")
-    private Long categoryId;
+    @Schema(description = "产品描述")
+    @TableField("product_desc")
+    private String productDesc;
+
+    @Schema(description = "是否启用")
+    @TableField("enabled")
+    private Boolean enabled;
 
     @Schema(description = "是否删除：0.否 1.是")
     @TableField("del")
@@ -52,7 +56,8 @@ public class ProductEntity implements ProductEntityGetter {
     public ProductEntity(ProductEntityGetter source) {
         this.id = source.getId();
         this.productName = source.getProductName();
-        this.categoryId = source.getCategoryId();
+        this.productDesc = source.getProductDesc();
+        this.enabled = source.getEnabled();
         this.del = source.getDel();
         this.createTime = source.getCreateTime();
         this.updateTime = source.getUpdateTime();

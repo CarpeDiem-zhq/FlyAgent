@@ -1,10 +1,8 @@
 package cn.yeezi.model.param;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -26,24 +24,16 @@ public class ScriptGenerateParam {
     @Schema(description = "产品id")
     private Long productId;
 
-    @Schema(description = "用户id")
-    private Long userId;
+    @NotNull(message = "功能id不能为空")
+    @Schema(description = "功能id")
+    private Long featureId;
 
-    @NotNull(message = "请选择提示词")
-    @Schema(description = "提示词id")
-    private Long promptId;
+    @NotNull(message = "核心卖点id不能为空")
+    @Size(min = 1, message = "至少选择一个核心卖点")
+    @Schema(description = "核心卖点id列表")
+    private List<Long> coreSellingPointIds;
 
-    @Schema(description = "优秀案例id")
-    private Long excellentCaseId;
-
-    @Min(value = 1, message = "广告脚本生成条数最小为1")
-    @Max(value = 10, message = "广告脚本生成条数最大为10")
-    @Schema(description = "广告脚本生成条数")
-    private Integer adNumber;
-
-    @Schema(description = "标签输入")
-    private List<TagInputParam> tags;
-
-    @Schema(description = "控制参数")
-    private ControlParamsParam controlParams;
+    @NotNull(message = "策略id不能为空")
+    @Schema(description = "策略id")
+    private Long strategyId;
 }

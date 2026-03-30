@@ -22,11 +22,6 @@ public interface PromptEntityGetter extends EntityCloner<PromptEntity> {
     Long getProductId();
 
     /**
-     * 提示词名称
-     */
-    String getPromptName();
-
-    /**
      * 系统提示词
      */
     String getSystemPrompt();
